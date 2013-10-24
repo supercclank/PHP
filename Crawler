@@ -1,0 +1,57 @@
+<?php 
+ini_set('xdebug.max_nesting_level', 200);
+
+class crawl
+        {
+         private        $phone="/\(?\d{3}\)?[-\s.]?\d{3}[-\s.]\d{4}/x";
+         private        $toDO = array();
+         private        $result = array();
+         private        $numbers = array();
+         private        $temp;
+         private        $fin = array();
+         private        $domain="";
+         private        $matched = array();
+         private        $FormattedNumbers = array();
+        public function __construct($u){
+                $t=strpos($u,"@");
+                $t=substr($u,$t);
+                $this->domain="http://www.".$t."/";
+                $this->getNumbers($this->domain);
+        } 
+         
+        public function getNumbers($u){
+                        exec ('C:\\lynx_w32\\lynx.BAT -dump '.$u,$this->result,$this->error);
+
+                        $this->temp=preg_grep($this->phone, $this->result);
+                        foreach($this->temp as $val){
+                                if(!in_array($val,$this->numbers))
+                                {
+                                $this->numbers[]=$val;
+                                preg_match($this->phone, $val,$this->matched);
+                                if(!in_array($this->matched[0],$this->FormattedNumbers)){
+                                        $this->FormattedNumbers[]=$this->matched[0];
+                                        }
+                                }
+                        }
+                        echo("<br /><br />"."Numbers Found: ");
+                        print_r($this->FormattedNumbers);
+                        echo("<br /><br />");
+                        $hold="$".$this->domain."$";
+                        $this->temp=preg_grep($hold,$this->result);
+                        foreach($this->temp as $val){
+                                if(!in_array($val,$this->fin))
+                                {
+                                        if(!in_array($val,$this->toDO))
+                                        {
+                                                $this->toDO[]=$val;
+                                        }
+                                }
+                        }
+                        foreach($this->toDO as $url){
+                                $this->fin[]=$url;
+                                unset($this->toDO[array_search($url,$this->toDO)]);
+                                $this->getNumbers($url);
+                                }
+                        }               
+        }
+?>
